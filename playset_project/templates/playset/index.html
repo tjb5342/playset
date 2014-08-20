@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>Playset</title>
 </head>
@@ -8,7 +9,27 @@
 	<h1>Welcome to Playset</h1>
 	
 	<p>Your name is <strong>{{ rdio_user.name }}</strong></p>
-
+	
+	<form id="search" action="{% url 'playset:index' %}" method="post">
+	{% csrf_token %}
+		<label for="setlist_id">Setlist ID: </label>
+		<input id="setlist_id" type="text" name="setlist_id" value="">
+		<input type="submit" value="Submit">
+	</form>
+	
+	{% if setlist_id %}
+		<p>
+		The setlist id is <strong>{{ setlist_id }}</strong>.<br />
+		The songs in the setlist are:<br />
+		<ul>
+		{% for song in songs_from_setlistfm %}
+			<li>{{ song }}</li>
+		{% endfor %}
+		</ul>
+	
+	</p>
+	{% endif %}
+	
 </body>
 
 </html>

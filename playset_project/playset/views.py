@@ -1,9 +1,9 @@
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 
 import oauth2 as oauth
-import urllib, rdio
+import urllib, json, rdio
 
 def index(request):
     context = RequestContext(request)
@@ -27,5 +27,23 @@ def index(request):
     context_dict = {'rdio_user': user,
                     'playback_token': playback_token,}
     
+    # Save user submitted playlist, get song titles, refactor, send to Rdio
+    if request.method == 'POST':
+        # Get setlist id
+        setlist_id = request.POST['setlist_id'].strip()
+        context_dict['setlist_id'] = setlist_id
+        
+        # Contact Setlist.fm API, save setlist as json
+        setlist_json = urllib.urlopen("http://api.setlist.fm/rest/0.1/setlist/%s.json" % (setlist_id))
+        setlist_json = json.loads(setlist_json.read())        
+        
+        songs_from_setlistfm = []
+        for set in setlist_json['setlist']['sets']['set']:
+            for song in set['song']:
+                if song['@name']:
+                    songs_from_setlistfm.append(song['@name'])
+        context_dict['songs_from_setlistfm'] = songs_from_setlistfm
+        
+
     return render_to_response('playset/index.html', context_dict, context)
 
